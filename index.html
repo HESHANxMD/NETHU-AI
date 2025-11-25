@@ -135,6 +135,25 @@ async function sendMsg() {
   addMessage(msg, "user");
   document.getElementById("userMsg").value = "";
 
+  // Auto reply for developer identity
+  const lower = msg.toLowerCase();
+  if (
+    lower.includes("who made you") ||
+    lower.includes("oyawa haduwe kawda") ||
+    lower.includes("made you") ||
+    lower.includes("developer") ||
+    lower.includes("ඔයාගෙ creator කව්ද") ||
+    lower.includes("ඔයාව හැදුවෙ කව්ද") ||
+    lower.includes("ඔයා කාගෙද") ||
+    lower.includes("kawda oya haduwe") ||
+    lower.includes("what your developer") 
+  ) {
+    const devReply = "මාව හැදුවෙ දිනිදු හේෂාන්. හේෂාන් තමයි මගේ owner..😘";
+    addMessage(devReply, "bot");
+    textToSpeech(devReply);
+    return;
+  }
+
   const apiUrl = `https://api.siputzx.my.id/api/ai/gpt3`;
 
   const params = {
