@@ -1,114 +1,190 @@
-// Next.js App Router version (app/page.js)
-// Full working conversion of your HTML AI Girlfriend app into Next.js
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Girlfriend - Voice Chat</title>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 
-export default function Home() {
-  return (
-    <div className="min-h-screen bg-[#0a0a0f] text-white p-5">
-      <div className="text-center">
-        <h1 className="text-4xl mt-5 bg-gradient-to-r from-pink-400 to-blue-400 bg-clip-text text-transparent font-bold">
-          NETHU AI ◆
-        </h1>
-
-        <img
-          src="https://files.catbox.moe/flert2.jpg"
-          className="w-[240px] mx-auto my-5 animate-bounce-slow"
-        />
-
-        <Messages />
-        <ChatBox />
-      </div>
-    </div>
-  );
-}
-
-// Messages Component
-function Messages() {
-  return (
-    <div
-      id="messages"
-      className="w-[90%] max-w-[600px] mx-auto p-3 bg-[#1b1b23] rounded-lg min-h-[120px] max-h-[300px] overflow-y-auto shadow-md"
-    ></div>
-  );
-}
-
-// ChatBox Component
-function ChatBox() {
-  async function sendMsg() {
-    const msgBox = document.getElementById("userMsg");
-    const msg = msgBox.value;
-    if (!msg) return;
-
-    addMessage(msg, "user");
-    msgBox.value = "";
-
-    const lower = msg.toLowerCase();
-
-    // Auto developer identity reply
-    if (
-      lower.includes("who made you") ||
-      lower.includes("had{")) {
-      const reply = "මාව හැදුවෙ දිනිදු හේෂාන්. හේෂාන් තමයි මගේ owner..😘";
-      addMessage(reply, "bot");
-      speak(reply);
-      return;
-    }
-
-    // API request
-    try {
-      const res = await fetch(
-        `https://api.siputzx.my.id/api/ai/gpt3?prompt=You are Nethu&content=${msg}`
-      );
-      const data = await res.json();
-
-      if (data?.data) {
-        addMessage(data.data, "bot");
-        speak(data.data);
-      } else {
-        addMessage("Sorry baby, mama reply ekak ganna bari una.", "bot");
-        speak("Sorry baby, mama reply ekak ganna bari una.");
-      }
-    } catch (e) {
-      addMessage("Baby error ekak una. Try again ok?", "bot");
-      speak("Baby error ekak una. Try again ok?");
-    }
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    background: #0a0a0f;
+    color: #fff;
+    font-family: Arial, sans-serif;
+    overflow-x: hidden;
+  }
+  .container {
+    text-align: center;
+    padding: 20px;
+  }
+  h1 {
+    font-size: 34px;
+    margin-top: 20px;
+    background: linear-gradient(to right, #ff66cc, #6699ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .girl {
+    width: 240px;
+    margin: 20px auto;
+    animation: float 3s ease-in-out infinite;
+  }
+  @keyframes float {
+    0% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+    100% { transform: translateY(0); }
+  }
+  .chat-box {
+    width: 90%;
+    max-width: 600px;
+    background: #12121a;
+    margin: 0 auto;
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 0 20px #ff66cc55;
+  }
+  textarea {
+    width: 100%;
+    height: 80px;
+    padding: 10px;
+    border-radius: 10px;
+    border: none;
+    outline: none;
+    resize: none;
+    background: #1b1b23;
+    color: white;
+    font-size: 16px;
+  }
+  button {
+    margin-top: 15px;
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(to right, #ff66cc, #6699ff);
+    border: none;
+    color: #fff;
+    font-size: 18px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+  button:hover {
+    opacity: 0.8;
   }
 
-  return (
-    <div className="w-[90%] max-w-[600px] mx-auto mt-5 bg-[#12121a] p-5 rounded-lg shadow-lg">
-      <textarea
-        id="userMsg"
-        placeholder="Say something..."
-        className="w-full h-[80px] p-3 rounded-md bg-[#1b1b23] text-white outline-none"
-      ></textarea>
+  /* Message display area */
+  .messages {
+    width: 90%;
+    max-width: 600px;
+    margin: 15px auto;
+    padding: 10px;
+    background: #1b1b23;
+    border-radius: 10px;
+    min-height: 120px;
+    max-height: 300px;
+    overflow-y: auto;
+  }
+  .msg {
+    padding: 8px 12px;
+    margin: 6px 0;
+    border-radius: 10px;
+    font-size: 15px;
+    width: fit-content;
+    max-width: 90%;
+  }
+  .user {
+    background: #444;
+    margin-left: auto;
+  }
+  .bot {
+    background: #ff66cc44;
+    margin-right: auto;
+  }
+</style>
+</head>
 
-      <button
-        className="w-full mt-3 py-3 rounded-lg bg-gradient-to-r from-pink-400 to-blue-400 text-lg"
-        onClick={sendMsg}
-      >
-        Send
-      </button>
-    </div>
-  );
-}
+<body>
+<div class="container">
+  <h1>NETHU AI ◆</h1>
 
-// Helpers
+  <img src="https://files.catbox.moe/flert2.jpg" class="girl" />
+
+  <div class="messages" id="messages"></div>
+
+  <div class="chat-box">
+    <textarea id="userMsg" placeholder="Say something..."></textarea>
+    <button onclick="sendMsg()">Send</button>
+  </div>
+</div>
+
+<script>
 function addMessage(text, sender) {
   const box = document.getElementById("messages");
   const div = document.createElement("div");
-  div.className = `p-2 my-1 rounded-lg max-w-[90%] text-sm ${
-    sender === "user" ? "bg-gray-600 ml-auto" : "bg-pink-400/30 mr-auto"
-  }`;
+  div.className = "msg " + sender;
   div.textContent = text;
   box.appendChild(div);
   box.scrollTop = box.scrollHeight;
 }
 
-function speak(text) {
-  const u = new SpeechSynthesisUtterance(text);
-  speechSynthesis.speak(u);
+async function sendMsg() {
+  const msg = document.getElementById("userMsg").value;
+  if (!msg) return;
+
+  addMessage(msg, "user");
+  document.getElementById("userMsg").value = "";
+
+  // Auto reply for developer identity
+  const lower = msg.toLowerCase();
+  if (
+    lower.includes("who made you") ||
+    lower.includes("oyawa haduwe kawda") ||
+    lower.includes("made you") ||
+    lower.includes("developer") ||
+    lower.includes("ඔයාගෙ creator කව්ද") ||
+    lower.includes("ඔයාව හැදුවෙ කව්ද") ||
+    lower.includes("ඔයා කාගෙද") ||
+    lower.includes("kawda oya haduwe") ||
+    lower.includes("what your developer") 
+  ) {
+    const devReply = "මාව හැදුවෙ දිනිදු හේෂාන්. හේෂාන් තමයි මගේ owner..😘";
+    addMessage(devReply, "bot");
+    textToSpeech(devReply);
+    return;
+  }
+
+  const apiUrl = `https://api.siputzx.my.id/api/ai/gpt3`;
+
+  const params = {
+    prompt: "You are a cute, flirty AI girlfriend named Nethu. Reply lovingly and naturally. Do NOT use ###, symbols, or any markdown formatting.",
+    content: msg
+  };
+
+  try {
+    const response = await axios.get(apiUrl, { params });
+
+    if (response.data?.status && response.data?.data) {
+      const botReply = response.data.data;
+      addMessage(botReply, "bot");
+      textToSpeech(botReply);
+    } else {
+      addMessage("Sorry baby, mama reply ekak ganna bari una.", "bot");
+      textToSpeech("Sorry baby, mama reply ekak ganna bari una.");
+    }
+  } catch (err) {
+    addMessage("Baby error ekak una. Try again ok?", "bot");
+    textToSpeech("Baby error ekak una. Try again ok?");
+  }
 }
 
-// Add animation via Tailwind
-// In globals.css add:
-// .animate-bounce-slow { animation: float 3s ease-in-out infinite; }
-// @keyframes float { 0%{transform:translateY(0)} 50%{transform:translateY(-10px)} 100%{transform:translateY(0)} }
+function textToSpeech(text) {
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.pitch = 1;
+  utter.rate = 1;
+  utter.volume = 1;
+  speechSynthesis.speak(utter);
+}
+</script>
+</body>
+</html>
