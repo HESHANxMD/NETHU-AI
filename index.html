@@ -1,4 +1,5 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -71,6 +72,35 @@
   button:hover {
     opacity: 0.8;
   }
+
+  /* Message display area */
+  .messages {
+    width: 90%;
+    max-width: 600px;
+    margin: 15px auto;
+    padding: 10px;
+    background: #1b1b23;
+    border-radius: 10px;
+    min-height: 120px;
+    max-height: 300px;
+    overflow-y: auto;
+  }
+  .msg {
+    padding: 8px 12px;
+    margin: 6px 0;
+    border-radius: 10px;
+    font-size: 15px;
+    width: fit-content;
+    max-width: 90%;
+  }
+  .user {
+    background: #444;
+    margin-left: auto;
+  }
+  .bot {
+    background: #ff66cc44;
+    margin-right: auto;
+  }
 </style>
 </head>
 
@@ -78,9 +108,9 @@
 <div class="container">
   <h1>NETHU AI ◆</h1>
 
-  <img src="https://files.catbox.moe/flert2.jpg" class="girl">
-  
-  </img>
+  <img src="https://files.catbox.moe/flert2.jpg" class="girl" />
+
+  <div class="messages" id="messages"></div>
 
   <div class="chat-box">
     <textarea id="userMsg" placeholder="Say something..."></textarea>
@@ -89,43 +119,46 @@
 </div>
 
 <script>
+function addMessage(text, sender) {
+  const box = document.getElementById("messages");
+  const div = document.createElement("div");
+  div.className = "msg " + sender;
+  div.textContent = text;
+  box.appendChild(div);
+  box.scrollTop = box.scrollHeight;
+}
 
-// ======================= SIPUTZX API =======================
 async function sendMsg() {
-
   const msg = document.getElementById("userMsg").value;
   if (!msg) return;
+
+  addMessage(msg, "user");
+  document.getElementById("userMsg").value = "";
 
   const apiUrl = `https://api.siputzx.my.id/api/ai/gpt3`;
 
   const params = {
-    // FIXED PROMPT → No ### , No markdown
     prompt: "You are a cute, flirty AI girlfriend named Nethu. Reply lovingly and naturally. Do NOT use ###, symbols, or any markdown formatting.",
     content: msg
   };
 
   try {
-
     const response = await axios.get(apiUrl, { params });
 
     if (response.data?.status && response.data?.data) {
-
       const botReply = response.data.data;
-
+      addMessage(botReply, "bot");
       textToSpeech(botReply);
-
     } else {
+      addMessage("Sorry baby, mama reply ekak ganna bari una.", "bot");
       textToSpeech("Sorry baby, mama reply ekak ganna bari una.");
     }
-
   } catch (err) {
+    addMessage("Baby error ekak una. Try again ok?", "bot");
     textToSpeech("Baby error ekak una. Try again ok?");
   }
-
 }
 
-
-// Text → Voice
 function textToSpeech(text) {
   const utter = new SpeechSynthesisUtterance(text);
   utter.pitch = 1;
@@ -133,7 +166,6 @@ function textToSpeech(text) {
   utter.volume = 1;
   speechSynthesis.speak(utter);
 }
-
 </script>
 </body>
 </html>
